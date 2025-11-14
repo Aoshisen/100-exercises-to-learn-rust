@@ -13,6 +13,7 @@ enum Status {
 pub enum Error {
     InvalidStatus,
 }
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
@@ -20,13 +21,8 @@ impl fmt::Display for Error {
         }
     }
 }
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
-        match self {
-            Error::InvalidStatus => None,
-        }
-    }
-}
+
+impl StdError for Error {}
 
 impl TryFrom<String> for Status {
     type Error = Error;
@@ -39,15 +35,11 @@ impl TryFrom<String> for Status {
         })
     }
 }
+
 impl TryFrom<&str> for Status {
     type Error = Error;
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Ok(match value.to_lowercase().as_str() {
-            "todo" => Status::ToDo,
-            "inprogress" => Status::InProgress,
-            "done" => Status::Done,
-            _ => return Err(Self::Error::InvalidStatus),
-        })
+        Status::try_from(value.to_string())
     }
 }
 
