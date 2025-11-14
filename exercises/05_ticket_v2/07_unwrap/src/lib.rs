@@ -2,7 +2,23 @@
 //   When the description is invalid, instead, it should use a default description:
 //   "Description not provided".
 fn easy_ticket(title: String, description: String, status: Status) -> Ticket {
-    todo!()
+    // 验证标题 - 如果无效则 panic
+    if title.is_empty() {
+        panic!("Title cannot be empty");
+    }
+    if title.len() > 50 {
+        panic!("Title cannot be longer than 50 bytes");
+    }
+
+    // 处理描述 - 如果无效则使用默认值
+    let final_description = if description.is_empty() || description.len() > 500 {
+        "Description not provided".to_string()
+    } else {
+        description
+    };
+
+    // 创建 ticket - 标题已经验证过，描述也处理过了
+    Ticket::new(title, final_description, status).unwrap()
 }
 
 #[derive(Debug, PartialEq, Clone)]

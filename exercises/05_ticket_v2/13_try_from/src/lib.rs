@@ -1,11 +1,54 @@
+use std::{error::Error as StdError, fmt};
 // TODO: Implement `TryFrom<String>` and `TryFrom<&str>` for `Status`.
 //  The parsing should be case-insensitive.
-
 #[derive(Debug, PartialEq, Clone)]
+#[allow(dead_code)]
 enum Status {
     ToDo,
     InProgress,
     Done,
+}
+
+#[derive(Debug)]
+pub enum Error {
+    InvalidStatus,
+}
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Error::InvalidStatus => write!(f, "invalid status"),
+        }
+    }
+}
+impl StdError for Error {
+    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+        match self {
+            Error::InvalidStatus => None,
+        }
+    }
+}
+
+impl TryFrom<String> for Status {
+    type Error = Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Ok(match value.to_lowercase().as_str() {
+            "todo" => Status::ToDo,
+            "inprogress" => Status::InProgress,
+            "done" => Status::Done,
+            _ => return Err(Self::Error::InvalidStatus),
+        })
+    }
+}
+impl TryFrom<&str> for Status {
+    type Error = Error;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Ok(match value.to_lowercase().as_str() {
+            "todo" => Status::ToDo,
+            "inprogress" => Status::InProgress,
+            "done" => Status::Done,
+            _ => return Err(Self::Error::InvalidStatus),
+        })
+    }
 }
 
 #[cfg(test)]
