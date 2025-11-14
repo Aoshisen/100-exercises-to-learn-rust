@@ -1,8 +1,8 @@
 pub mod ticket {
     pub struct Ticket {
-        title: String,
-        description: String,
-        status: String,
+        pub title: String,
+        pub description: String,
+        pub status: String,
     }
 
     impl Ticket {
@@ -28,6 +28,15 @@ pub mod ticket {
                 description,
                 status,
             }
+        }
+        pub fn description(&self) -> &str {
+            &self.description
+        }
+        pub fn title(&self) -> &str {
+            &self.title
+        }
+        pub fn status(&self) -> &str {
+            &self.status
         }
 
         // TODO: Add three public methods to the `Ticket` struct:

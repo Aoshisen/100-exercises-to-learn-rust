@@ -2,6 +2,16 @@
 // even, otherwise `false`.
 //
 // Then implement the trait for `u32` and `i32`.
+trait IsEven {
+    fn is_even(&self) -> bool
+    where
+        Self: Copy + std::ops::Rem<Output = Self> + PartialEq + From<u8>,
+    {
+        *self % Self::from(2u8) == Self::from(0u8)
+    }
+}
+impl IsEven for u32 {}
+impl IsEven for i32 {}
 
 #[cfg(test)]
 mod tests {

@@ -3,26 +3,30 @@ pub struct Ticket {
     description: String,
     status: String,
 }
-
-// TODO: based on what you learned in this section, replace `todo!()` with
-//  the correct **stack size** for the respective type.
-#[cfg(test)]
+// pub struct String {
+//     ptr: *mut u8, // 指向实际字符串数据的指针 (8 bytes)#[cfg(test)]
 mod tests {
     use super::Ticket;
     use std::mem::size_of;
 
     #[test]
     fn string_size() {
-        assert_eq!(size_of::<String>(), todo!());
+        // String 包含 ptr, len, cap 三个 usize 大小的字段
+        assert_eq!(size_of::<String>(), size_of::<usize>() * 3);
     }
 
     #[test]
     fn ticket_size() {
-        // This is a tricky question!
-        // The "intuitive" answer happens to be the correct answer this time,
-        // but, in general, the memory layout of structs is a more complex topic.
-        // If you're curious, check out the "Type layout" section of The Rust Reference
-        // https://doc.rust-lang.org/reference/type-layout.html for more information.
-        assert_eq!(size_of::<Ticket>(), todo!());
+        // Ticket 包含三个 String 字段
+        assert_eq!(size_of::<Ticket>(), size_of::<String>() * 3);
     }
-}
+    
+    #[test]
+    fn verify_pointer_size() {
+        // 验证指针大小（在 64 位系统上应该是 8）
+        assert_eq!(size_of::<*mut u8>(), size_of::<usize>());
+    }
+} 
+//     len: usize,   // 字符串的实际长度 (8 bytes)
+//     cap: usize,   // 分配的内存容量 (8 bytes)
+// }

@@ -6,16 +6,19 @@ mod tests {
 
     #[test]
     fn u16_size() {
-        assert_eq!(size_of::<u16>(), todo!());
+        //一个16位无符号整数占2字节
+        assert_eq!(size_of::<u16>(), 2);
     }
 
     #[test]
     fn i32_size() {
-        assert_eq!(size_of::<i32>(), todo!());
+        //一个32位有符号整数占4字节
+        assert_eq!(size_of::<i32>(), 4);
     }
 
     #[test]
     fn bool_size() {
-        assert_eq!(size_of::<bool>(), todo!());
+        //一个布尔占1字节
+        assert_eq!(size_of::<bool>(), 1);
     }
 }
