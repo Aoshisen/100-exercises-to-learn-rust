@@ -1,3 +1,4 @@
+
 use ticket_fields::{TicketDescription, TicketTitle};
 
 // TODO: Let's start sketching our ticket store!
@@ -8,7 +9,7 @@ use ticket_fields::{TicketDescription, TicketTitle};
 //   You want to *delegate* the iteration to the `Vec<Ticket>` field in `TicketStore`.
 //   Look at the standard library documentation for `Vec` to find the right type
 //   to return from `into_iter`.
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct TicketStore {
     tickets: Vec<Ticket>,
 }
@@ -29,9 +30,7 @@ pub enum Status {
 
 impl TicketStore {
     pub fn new() -> Self {
-        Self {
-            tickets: Vec::new(),
-        }
+        Self::default()
     }
 
     pub fn add_ticket(&mut self, ticket: Ticket) {
@@ -39,6 +38,13 @@ impl TicketStore {
     }
 }
 
+impl IntoIterator for TicketStore {
+    type Item = Ticket;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.tickets.into_iter()
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;

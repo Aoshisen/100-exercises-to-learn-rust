@@ -3,7 +3,7 @@
 
 use ticket_fields::{TicketDescription, TicketTitle};
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct TicketStore {
     tickets: Vec<Ticket>,
 }
@@ -21,19 +21,34 @@ pub enum Status {
     InProgress,
     Done,
 }
+pub struct TicketDraft {
+    pub title: TicketTitle,
+    pub description: TicketDescription,
+}
+
+impl From<TicketDraft> for Ticket {
+    fn from(draft: TicketDraft) -> Self {
+        Self {
+            title: draft.title,
+            description: draft.description,
+            status: Status::ToDo,
+        }
+    }
+}
 
 impl TicketStore {
     pub fn new() -> Self {
-        Self {
-            tickets: Vec::new(),
-        }
+        Self::default()
     }
 
     // Using `Into<Ticket>` as the type parameter for `ticket` allows the method to accept any type
     // that can be infallibly converted into a `Ticket`.
     // This can make it nicer to use the method, as it removes the syntax noise of `.into()`
     // from the calling site. It can worsen the quality of the compiler error messages, though.
-    pub fn add_ticket(&mut self, ticket: impl Into<Ticket>) {
+    pub fn add_ticket<T>(&mut self, ticket: T)
+    where
+        T: Into<Ticket>,
+    {
         self.tickets.push(ticket.into());
     }
 }
