@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TicketId(u64);
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct TicketStore {
     tickets: BTreeMap<TicketId, Ticket>,
     counter: u64,
@@ -12,10 +12,7 @@ pub struct TicketStore {
 
 impl TicketStore {
     pub fn new() -> Self {
-        Self {
-            tickets: BTreeMap::new(),
-            counter: 0,
-        }
+        Self::default()
     }
 
     pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {

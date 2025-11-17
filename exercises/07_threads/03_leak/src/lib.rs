@@ -6,7 +6,25 @@
 use std::thread;
 
 pub fn sum(v: Vec<i32>) -> i32 {
-    todo!()
+    // 泄漏堆分配，获取静态切片
+    let static_slice: &'static mut [i32] = v.leak();
+
+    // 处理空切片的情况
+    if static_slice.is_empty() {
+        return 0;
+    }
+
+    // 计算中间位置，确保正确分割成两半
+    let mid = static_slice.len() / 2;
+
+    // 使用 split_at 正确分割成两半
+    let (left, right) = static_slice.split_at(mid);
+
+    [left, right]
+        .into_iter()
+        .map(|slice| thread::spawn(move || slice.iter().sum::<i32>()))
+        .map(|handle| handle.join().unwrap())
+        .sum()
 }
 
 #[cfg(test)]
