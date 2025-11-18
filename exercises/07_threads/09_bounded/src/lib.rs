@@ -1,7 +1,7 @@
 // TODO: Convert the implementation to use bounded channels.
 use crate::data::{Ticket, TicketDraft};
 use crate::store::{TicketId, TicketStore};
-use std::sync::mpsc::{sync_channel, Receiver, RecvError, SyncSender};
+use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
 
 pub mod data;
 pub mod store;
@@ -38,7 +38,7 @@ pub fn launch(capacity: usize) -> TicketStoreClient {
     TicketStoreClient { sender }
 }
 
-enum Command {
+pub enum Command {
     Insert {
         draft: TicketDraft,
         response_channel: SyncSender<TicketId>,

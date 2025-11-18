@@ -12,6 +12,8 @@ fn insert_works() {
         title: ticket_title(),
         description: ticket_description(),
     };
+
+    //这种方式会自己手动管理自己的command 以及处理后续的recv 逻辑
     let command = Command::Insert {
         draft: draft.clone(),
         response_sender,
@@ -26,10 +28,12 @@ fn insert_works() {
     let ticket_id: TicketId = response_receiver.recv().expect("No response received!");
 
     let (response_sender, response_receiver) = std::sync::mpsc::channel();
+
     let command = Command::Get {
         id: ticket_id,
         response_sender,
     };
+
     sender
         .send(command)
         .expect("Did you actually spawn a thread? The channel is closed!");
@@ -38,6 +42,7 @@ fn insert_works() {
         .recv()
         .expect("No response received!")
         .unwrap();
+
     assert_eq!(ticket_id, ticket.id);
     assert_eq!(ticket.status, Status::ToDo);
     assert_eq!(ticket.title, draft.title);

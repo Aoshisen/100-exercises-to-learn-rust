@@ -2,7 +2,7 @@ use crate::{
     data::{Ticket, TicketDraft},
     store::{TicketId, TicketStore},
 };
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 pub mod data;
 pub mod store;
@@ -20,21 +20,25 @@ pub enum Command {
 }
 
 pub fn launch() -> Sender<Command> {
-    let (sender, receiver) = std::sync::mpsc::channel();
+    let (sender, receiver) = channel();
     std::thread::spawn(move || server(receiver));
+    //sender 被返回出去了,receiver 被 移动给了server 函数
     sender
 }
 
 // TODO: handle incoming commands as expected.
 pub fn server(receiver: Receiver<Command>) {
     let mut store = TicketStore::new();
+    // 循环的等待receiver 接受到消息 然后做对应的处理
     loop {
         match receiver.recv() {
             Ok(Command::Insert {
                 draft,
                 response_sender,
             }) => {
+                //1.通过store 添加ticket;
                 let id = store.add_ticket(draft);
+                //2. 通过response_sender 发送返回值
                 let _ = response_sender.send(id);
             }
             Ok(Command::Get {
