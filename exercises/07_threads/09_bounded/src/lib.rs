@@ -23,6 +23,7 @@ impl TicketStoreClient {
     }
     pub fn get(&self, id: TicketId) -> Result<Option<Ticket>, Box<dyn std::error::Error>> {
         let (response_sender, response_receiver) = sync_channel(1);
+        //这里的Command::Get 规定了 接受的参数必须是SyncSender<Option<Ticket>> 然后 同样的response_receiver 也同样的是Option<Ticket> 但是是Receiver 包裹其值; 类型推倒就完成了
         let command = Command::Get {
             id,
             response_channel: response_sender,

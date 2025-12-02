@@ -1,25 +1,43 @@
 use std::collections::BTreeMap;
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::data::{Status, Ticket, TicketDraft};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TicketId(u64);
 
-#[derive(Clone)]
-pub struct TicketStore {
+#[derive(Default)]
+pub struct InnerStore {
     tickets: BTreeMap<TicketId, Arc<RwLock<Ticket>>>,
     counter: u64,
 }
 
+#[derive(Clone, Default)]
+pub struct TicketStore {
+    inner: Arc<RwLock<InnerStore>>,
+}
+
 impl TicketStore {
     pub fn new() -> Self {
-        Self {
-            tickets: BTreeMap::new(),
-            counter: 0,
-        }
+        Default::default()
     }
 
+    pub fn write(
+        &self,
+    ) -> Result<RwLockWriteGuard<InnerStore>, std::sync::PoisonError<RwLockWriteGuard<InnerStore>>>
+    {
+        self.inner.write()
+    }
+
+    pub fn read(
+        &self,
+    ) -> Result<RwLockReadGuard<InnerStore>, std::sync::PoisonError<RwLockReadGuard<InnerStore>>>
+    {
+        self.inner.read()
+    }
+}
+
+impl InnerStore {
     pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {
         let id = TicketId(self.counter);
         self.counter += 1;

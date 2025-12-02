@@ -13,6 +13,7 @@ mod status;
 // TODO: Add a new error variant to `TicketNewError` for when the status string is invalid.
 //   When calling `source` on an error of that variant, it should return a `ParseStatusError` rather than `None`.
 
+//THISERROR
 #[derive(Debug, thiserror::Error)]
 pub enum TicketNewError {
     #[error("Title cannot be empty")]
