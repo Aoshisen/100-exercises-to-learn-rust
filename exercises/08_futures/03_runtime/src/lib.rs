@@ -2,6 +2,7 @@
 //  accept connections on both of them concurrently, and always reply to clients by sending
 //  the `Display` representation of the `reply` argument as a response.
 use std::fmt::Display;
+use std::sync::Arc;
 use tokio::io::AsyncWriteExt;
 use tokio::net::TcpListener;
 
@@ -10,7 +11,54 @@ where
     // `T` cannot be cloned. How do you share it between the two server tasks?
     T: Display + Send + Sync + 'static,
 {
-    todo!()
+    // 使用 Arc 包装 reply 以便在线程间共享
+    let shared_reply = Arc::new(reply);
+    loop {
+        tokio::select! {
+            result = first.accept() => {
+                match result {
+                    Ok((socket, _)) => {
+                        let reply_clone=shared_reply.clone();
+                        tokio::spawn(async move {
+                            if let Err(e) = handle_connection(socket,reply_clone).await {
+                                eprintln!("Error handling connection: {e}");
+                            }
+                        });
+                    }
+                    Err(e) => {
+                        eprintln!("Error accepting connection on first listener: {e}");
+                    }
+                }
+            }
+            result = second.accept() => {
+                match result {
+                    Ok((socket, _)) => {
+                        let reply_clone=shared_reply.clone();
+                        tokio::spawn(async move {
+                            if let Err(e) = handle_connection(socket,reply_clone).await {
+                                eprintln!("Error handling connection: {e}");
+                            }
+                        });
+                    }
+                    Err(e) => {
+                        eprintln!("Error accepting connection on second listener: {e}");
+                    }
+                }
+            }
+        }
+    }
+}
+
+async fn handle_connection<T>(
+    mut socket: tokio::net::TcpStream,
+    reply: T,
+) -> Result<(), anyhow::Error>
+where
+    T: Display + Sync,
+{
+    let response = format!("{reply}");
+    socket.write_all(response.as_bytes()).await?;
+    Ok(())
 }
 
 #[cfg(test)]

@@ -1,3 +1,5 @@
+use tokio::io;
+
 use tokio::net::TcpListener;
 
 // TODO: write an echo server that accepts incoming TCP connections and
@@ -11,7 +13,20 @@ use tokio::net::TcpListener;
 // - `tokio::net::TcpStream::split` to obtain a reader and a writer from the socket
 // - `tokio::io::copy` to copy data from the reader to the writer
 pub async fn echo(listener: TcpListener) -> Result<(), anyhow::Error> {
-    todo!()
+    loop {
+        let (socket, _) = listener.accept().await?;
+        tokio::spawn(async move {
+            if let Err(e) = handle_connection(socket).await {
+                eprintln!("Error handling connection: {e}");
+            }
+        });
+    }
+}
+
+async fn handle_connection(socket: tokio::net::TcpStream) -> Result<(), anyhow::Error> {
+    let (mut reader, mut writer) = socket.into_split(); // 修改此处
+    io::copy(&mut reader, &mut writer).await?; // 现在类型匹配了
+    Ok(())
 }
 
 #[cfg(test)]
