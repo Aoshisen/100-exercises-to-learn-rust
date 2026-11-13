@@ -6,15 +6,21 @@
 // You also need to add a `get` method that takes as input a `TicketId`
 // and returns an `Option<&Ticket>`.
 
-use ticket_fields::{TicketDescription, TicketTitle};
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 #[derive(Clone)]
 pub struct TicketStore {
     tickets: Vec<Ticket>,
+    max_id: TicketId,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TicketId(u64);
+impl TicketId {
+    pub fn increment(&mut self, amount: u64) {
+        self.0 = self.0.saturating_add(amount);
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Ticket {
@@ -36,23 +42,43 @@ pub enum Status {
     InProgress,
     Done,
 }
+impl From<TicketDraft> for Ticket {
+    fn from(value: TicketDraft) -> Self {
+        Ticket {
+            id: TicketId(9),
+            title: value.title,
+            description: value.description,
+            status: Status::ToDo,
+        }
+    }
+}
 
 impl TicketStore {
     pub fn new() -> Self {
         Self {
             tickets: Vec::new(),
+            max_id: TicketId(0),
         }
     }
 
-    pub fn add_ticket(&mut self, ticket: Ticket) {
+    pub fn add_ticket<T>(&mut self, ticket: T) -> TicketId where T: Into<Ticket> {
+        let mut ticket: Ticket = ticket.into();
+        let current_max_id = self.max_id.clone();
+        ticket.id = current_max_id;
         self.tickets.push(ticket);
+        self.max_id.increment(1);
+        current_max_id
+    }
+
+    pub fn get(&self, id: TicketId) -> Option<&Ticket> {
+        self.tickets.iter().find(|&ticket| ticket.id == id)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Status, TicketDraft, TicketStore};
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use crate::{ Status, TicketDraft, TicketStore };
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn works() {

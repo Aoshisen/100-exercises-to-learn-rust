@@ -1,4 +1,4 @@
-use ticket_fields::{TicketDescription, TicketTitle};
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 // TODO: Provide an `iter` method that returns an iterator over `&Ticket` items.
 //
@@ -34,12 +34,16 @@ impl TicketStore {
     pub fn add_ticket(&mut self, ticket: Ticket) {
         self.tickets.push(ticket);
     }
+    pub fn iter(&self) -> std::slice::Iter<'_, Ticket> {
+        //内部持有切片ticket 的切片
+        self.tickets.iter()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn add_ticket() {

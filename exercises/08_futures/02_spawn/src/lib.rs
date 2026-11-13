@@ -1,10 +1,37 @@
 use tokio::net::TcpListener;
-
+use tokio::io::{ AsyncReadExt, AsyncWriteExt };
 // TODO: write an echo server that accepts TCP connections on two listeners, concurrently.
 //  Multiple connections (on the same listeners) should be processed concurrently.
 //  The received data should be echoed back to the client.
 pub async fn echoes(first: TcpListener, second: TcpListener) -> Result<(), anyhow::Error> {
-    todo!()
+    loop {
+        let (mut socket, _) =
+            (tokio::select! {
+            outcome=first.accept()=>outcome,
+            outcome=second.accept()=>outcome,
+        })?;
+
+        tokio::spawn(async move {
+            let mut buf = [0u8; 4096];
+            loop {
+                match socket.read(&mut buf).await {
+                    Ok(0) => {
+                        break;
+                    }
+                    Ok(n) => {
+                        if socket.write_all(&buf[..n]).await.is_err() {
+                            break;
+                        }
+                    }
+
+                    Err(e) => {
+                        eprintln!("read Error{}", e);
+                        break;
+                    }
+                }
+            }
+        });
+    }
 }
 
 #[cfg(test)]
@@ -12,7 +39,7 @@ mod tests {
     use super::*;
     use std::net::SocketAddr;
     use std::panic;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::io::{ AsyncReadExt, AsyncWriteExt };
     use tokio::task::JoinSet;
 
     async fn bind_random() -> (TcpListener, SocketAddr) {

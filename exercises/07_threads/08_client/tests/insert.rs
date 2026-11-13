@@ -1,6 +1,6 @@
-use client::data::{Status, TicketDraft};
+use client::data::{ Status, TicketDraft };
 use client::launch;
-use ticket_fields::test_helpers::{ticket_description, ticket_title};
+use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
 #[test]
 fn insert_works() {

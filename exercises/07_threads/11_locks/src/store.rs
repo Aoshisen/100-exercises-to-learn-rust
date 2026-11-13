@@ -1,9 +1,15 @@
-use crate::data::{Status, Ticket, TicketDraft};
+use crate::data::{ Status, Ticket, TicketDraft };
 use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
+use std::fmt::{ Display };
+use std::sync::{ Arc, Mutex };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TicketId(u64);
+impl Display for TicketId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 #[derive(Clone)]
 pub struct TicketStore {
@@ -28,13 +34,13 @@ impl TicketStore {
             description: ticket.description,
             status: Status::ToDo,
         };
-        todo!();
+        self.tickets.insert(id, Arc::new(Mutex::new(ticket)));
         id
     }
 
     // The `get` method should return a handle to the ticket
     // which allows the caller to either read or modify the ticket.
-    pub fn get(&self, id: TicketId) -> Option<todo!()> {
-        todo!()
+    pub fn get(&self, id: TicketId) -> Option<Arc<Mutex<Ticket>>> {
+        self.tickets.get(&id).cloned()
     }
 }

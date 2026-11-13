@@ -3,10 +3,9 @@
 
 #[cfg(test)]
 mod tests {
-
     #[test]
     fn u16_to_u32() {
-        let v: u32 = todo!();
+        let v = 47u32;
         assert_eq!(47u16 as u32, v);
     }
 
@@ -20,18 +19,24 @@ mod tests {
         // catch this at compile time.
         #[allow(overflowing_literals)]
         let x = { 255 as i8 };
+        // 1111_1111 （计算机补码）
+        // 第一位表示符号位 1 表示负数
+        // 0000_0000
+        // 末尾加一
+        // 0000_0001  (1)
+        // 所以最终在i8 中解释为-1
 
         // You could solve this by using exactly the same expression as above,
         // but that would defeat the purpose of the exercise. Instead, use a genuine
         // `i8` value that is equivalent to `255` when converted to `u8`.
-        let y: i8 = todo!();
+        let y: i8 = -1;
 
         assert_eq!(x, y);
     }
 
     #[test]
     fn bool_to_u8() {
-        let v: u8 = todo!();
+        let v: u8 = 1;
         assert_eq!(true as u8, v);
     }
 }

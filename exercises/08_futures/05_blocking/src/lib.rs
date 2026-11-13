@@ -2,18 +2,42 @@
 //  When running the tests, you should observe that it hangs, due to a
 //  deadlock between the caller and the server.
 //  Use `spawn_blocking` inside `echo` to resolve the issue.
-use std::io::{Read, Write};
 use tokio::net::TcpListener;
+use std::io::{ Read, Write };
+use tokio::task::spawn_blocking;
 
 pub async fn echo(listener: TcpListener) -> Result<(), anyhow::Error> {
+    // The blocking read/write runs on tokio's blocking pool, so the
+    // runtime thread stays free to poll other tasks.
+
+    // let (socket, _) = listener.accept().await?;
+    // let mut socket = socket.into_std()?;
+    // let mut buffer = Vec::new();
+    // socket.read_to_end(&mut buffer)?;
+    // socket.write_all(&buffer)?;
     loop {
         let (socket, _) = listener.accept().await?;
-        let mut socket = socket.into_std()?;
-        socket.set_nonblocking(false)?;
-        let mut buffer = Vec::new();
-        socket.read_to_end(&mut buffer)?;
-        socket.write_all(&buffer)?;
+        spawn_blocking(move || {
+            let mut socket = socket.into_std()?;
+            socket.set_nonblocking(false)?;
+            let mut buffer = Vec::new();
+            socket.read_to_end(&mut buffer)?;
+            socket.write_all(&buffer)?;
+            Ok::<_, anyhow::Error>(())
+        }).await??;
     }
+
+    //下面这个也是ok的
+    // let (socket, _) = listener.accept().await?;
+    // loop {
+    //     let (mut socket, _) = listener.accept().await?;
+    //     tokio::spawn(async move {
+    //         let mut buffer = Vec::new();
+    //         socket.read_to_end(&mut buffer).await?;
+    //         socket.write_all(&buffer).await?;
+    //         Ok::<_, std::io::Error>(())
+    //     });
+    // }
 }
 
 #[cfg(test)]
@@ -21,7 +45,7 @@ mod tests {
     use super::*;
     use std::net::SocketAddr;
     use std::panic;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::io::{ AsyncReadExt, AsyncWriteExt };
     use tokio::task::JoinSet;
 
     async fn bind_random() -> (TcpListener, SocketAddr) {
@@ -35,12 +59,7 @@ mod tests {
         let (listener, addr) = bind_random().await;
         tokio::spawn(echo(listener));
 
-        let requests = vec![
-            "hello here we go with a long message",
-            "world",
-            "foo",
-            "bar",
-        ];
+        let requests = vec!["hello here we go with a long message", "world", "foo", "bar"];
         let mut join_set = JoinSet::new();
 
         for request in requests {

@@ -1,6 +1,8 @@
 // TODO: Implement `Index<&TicketId>` and `Index<TicketId>` for `TicketStore`.
 
-use ticket_fields::{TicketDescription, TicketTitle};
+use std::ops::Index;
+
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 #[derive(Clone)]
 pub struct TicketStore {
@@ -57,11 +59,24 @@ impl TicketStore {
         self.tickets.iter().find(|&t| t.id == id)
     }
 }
+impl Index<TicketId> for TicketStore {
+    type Output = Ticket;
+    fn index(&self, index: TicketId) -> &Self::Output {
+        self.get(index).expect("not found ticket")
+    }
+}
+
+impl Index<&TicketId> for TicketStore {
+    type Output = Ticket;
+    fn index(&self, index: &TicketId) -> &Self::Output {
+        &self[*index]
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::{Status, TicketDraft, TicketStore};
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use crate::{ Status, TicketDraft, TicketStore };
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn works() {

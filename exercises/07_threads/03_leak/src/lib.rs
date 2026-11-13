@@ -6,7 +6,15 @@
 use std::thread;
 
 pub fn sum(v: Vec<i32>) -> i32 {
-    todo!()
+    let half_len = v.len() / 2;
+    // v.leak() 返回 &'static [i32]，不再受限于当前函数作用域
+    let (head, tail) = v.leak().split_at(half_len);
+
+    // 因为 head 和 tail 是 &'static，标准 spawn 可以自由地将其 move 进新线程
+    let head_handle = thread::spawn(move || head.iter().sum::<i32>());
+    let tail_handle = thread::spawn(move || tail.iter().sum::<i32>());
+
+    head_handle.join().unwrap() + tail_handle.join().unwrap()
 }
 
 #[cfg(test)]

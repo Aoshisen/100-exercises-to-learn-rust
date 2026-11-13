@@ -10,7 +10,9 @@ struct Ticket {
 #[derive(Debug, PartialEq)]
 enum Status {
     ToDo,
-    InProgress { assigned_to: String },
+    InProgress {
+        assigned_to: String,
+    },
     Done,
 }
 
@@ -36,14 +38,17 @@ impl Ticket {
         }
     }
     pub fn assigned_to(&self) -> Option<&String> {
-        todo!()
+        match &self.status {
+            Status::InProgress { assigned_to } => Some(assigned_to),
+            _ => None,
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::{valid_description, valid_title};
+    use common::{ valid_description, valid_title };
 
     #[test]
     fn test_todo() {
@@ -59,13 +64,9 @@ mod tests {
 
     #[test]
     fn test_in_progress() {
-        let ticket = Ticket::new(
-            valid_title(),
-            valid_description(),
-            Status::InProgress {
-                assigned_to: "Alice".to_string(),
-            },
-        );
+        let ticket = Ticket::new(valid_title(), valid_description(), Status::InProgress {
+            assigned_to: "Alice".to_string(),
+        });
         assert_eq!(ticket.assigned_to(), Some(&"Alice".to_string()));
     }
 }

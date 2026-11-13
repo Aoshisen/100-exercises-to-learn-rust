@@ -1,7 +1,7 @@
-use response::data::{Status, Ticket, TicketDraft};
+use response::data::{ Status, Ticket, TicketDraft };
 use response::store::TicketId;
-use response::{launch, Command};
-use ticket_fields::test_helpers::{ticket_description, ticket_title};
+use response::{ launch, Command };
+use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
 #[test]
 fn insert_works() {
@@ -30,14 +30,9 @@ fn insert_works() {
         id: ticket_id,
         response_sender,
     };
-    sender
-        .send(command)
-        .expect("Did you actually spawn a thread? The channel is closed!");
+    sender.send(command).expect("Did you actually spawn a thread? The channel is closed!");
 
-    let ticket: Ticket = response_receiver
-        .recv()
-        .expect("No response received!")
-        .unwrap();
+    let ticket = response_receiver.recv().expect("No response received!").unwrap();
     assert_eq!(ticket_id, ticket.id);
     assert_eq!(ticket.status, Status::ToDo);
     assert_eq!(ticket.title, draft.title);

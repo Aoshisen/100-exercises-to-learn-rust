@@ -1,19 +1,32 @@
 // TODO: use `Status` as type for `Ticket::status`
 //   Adjust the signature and implementation of all other methods as necessary.
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 // `derive`s are recursive: it can only derive `PartialEq` if all fields also implement `PartialEq`.
 // Same holds for `Debug`. Do what you must with `Status` to make this work.
-struct Ticket {
+pub enum Status {
+    // TODO: add the missing variants
+    ToDo,
+    InProgress,
+    Done,
+}
+
+#[derive(Debug)]
+pub struct Ticket {
     title: String,
     description: String,
-    status: String,
+    status: Status,
+}
+impl PartialEq for Ticket {
+    fn eq(&self, other: &Self) -> bool {
+        self.description == other.description &&
+            self.title == other.title &&
+            self.status == other.status
+    }
 }
 
-enum Status {
-    // TODO: add the missing variants
-}
-
+// const STATUS: Status = Status::TODO;
+// println!(STATUS);
 impl Ticket {
     pub fn new(title: String, description: String, status: String) -> Ticket {
         if title.is_empty() {
@@ -28,14 +41,18 @@ impl Ticket {
         if description.len() > 500 {
             panic!("Description cannot be longer than 500 bytes");
         }
-        if status != "To-Do" && status != "In Progress" && status != "Done" {
-            panic!("Only `To-Do`, `In Progress`, and `Done` statuses are allowed");
-        }
+
+        let true_status: Status = match status.as_str() {
+            "To-Do" => Status::ToDo,
+            "In Progress" => Status::InProgress,
+            "Done" => Status::Done,
+            _ => panic!("Only `To-Do`, `In Progress`, and `Done` statuses are allowed"),
+        };
 
         Ticket {
             title,
             description,
-            status,
+            status: true_status,
         }
     }
 
@@ -47,7 +64,7 @@ impl Ticket {
         &self.description
     }
 
-    pub fn status(&self) -> &String {
+    pub fn status(&self) -> &Status {
         &self.status
     }
 }
@@ -55,7 +72,7 @@ impl Ticket {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::{valid_description, valid_title};
+    use common::{ valid_description, valid_title };
 
     #[test]
     fn test_partial_eq() {

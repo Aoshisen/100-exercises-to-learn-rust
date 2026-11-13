@@ -1,4 +1,4 @@
-use ticket_fields::{TicketDescription, TicketTitle};
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 // TODO: Let's start sketching our ticket store!
 //  First task: implement `IntoIterator` on `TicketStore` to allow iterating over all the tickets
@@ -38,11 +38,19 @@ impl TicketStore {
         self.tickets.push(ticket);
     }
 }
+impl IntoIterator for TicketStore {
+    type Item = Ticket;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.tickets.into_iter()
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn add_ticket() {

@@ -1,4 +1,4 @@
-use ticket_fields::{TicketDescription, TicketTitle};
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 // TODO: Implement the `IntoIterator` trait for `&TicketStore` so that the test compiles and passes.
 #[derive(Clone)]
@@ -31,7 +31,17 @@ impl TicketStore {
         self.tickets.push(ticket);
     }
 
-    pub fn iter(&self) -> std::slice::Iter<Ticket> {
+    pub fn iter(&self) -> std::slice::Iter<'_, Ticket> {
+        self.tickets.iter()
+    }
+}
+
+impl<'a> IntoIterator for &'a TicketStore {
+    type Item = &'a Ticket;
+
+    type IntoIter = std::slice::Iter<'a, Ticket>;
+
+    fn into_iter(self) -> Self::IntoIter {
         self.tickets.iter()
     }
 }
@@ -39,7 +49,7 @@ impl TicketStore {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn add_ticket() {

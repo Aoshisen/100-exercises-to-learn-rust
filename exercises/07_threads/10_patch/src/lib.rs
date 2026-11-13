@@ -1,8 +1,8 @@
-use std::sync::mpsc::{sync_channel, Receiver, SyncSender};
+use std::sync::mpsc::{ sync_channel, Receiver, SyncSender };
 
 // TODO: Implement the patching functionality.
-use crate::data::{Ticket, TicketDraft, TicketPatch};
-use crate::store::{TicketId, TicketStore};
+use crate::data::{ Ticket, TicketDraft, TicketPatch };
+use crate::store::{ TicketId, TicketStore };
 
 pub mod data;
 pub mod store;
@@ -35,7 +35,13 @@ impl TicketStoreClient {
         Ok(response_receiver.recv().unwrap())
     }
 
-    pub fn update(&self, ticket_patch: TicketPatch) -> Result<(), OverloadedError> {}
+    pub fn update(&self, ticket_patch: TicketPatch) -> Result<(), OverloadedError> {
+        let (response_sender, response_receiver) = sync_channel(1);
+        self.sender
+            .try_send(Command::Update { patch: ticket_patch, response_channel: response_sender })
+            .map_err(|_| OverloadedError)?;
+        Ok(response_receiver.recv().unwrap())
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -48,7 +54,7 @@ pub fn launch(capacity: usize) -> TicketStoreClient {
     TicketStoreClient { sender }
 }
 
-enum Command {
+pub enum Command {
     Insert {
         draft: TicketDraft,
         response_channel: SyncSender<TicketId>,
@@ -67,25 +73,17 @@ pub fn server(receiver: Receiver<Command>) {
     let mut store = TicketStore::new();
     loop {
         match receiver.recv() {
-            Ok(Command::Insert {
-                draft,
-                response_channel,
-            }) => {
+            Ok(Command::Insert { draft, response_channel }) => {
                 let id = store.add_ticket(draft);
                 let _ = response_channel.send(id);
             }
-            Ok(Command::Get {
-                id,
-                response_channel,
-            }) => {
+            Ok(Command::Get { id, response_channel }) => {
                 let ticket = store.get(id);
                 let _ = response_channel.send(ticket.cloned());
             }
-            Ok(Command::Update {
-                patch,
-                response_channel,
-            }) => {
-                todo!()
+            Ok(Command::Update { patch, response_channel }) => {
+                store.apply_patch(patch);
+                let _ = response_channel.send(());
             }
             Err(_) => {
                 // There are no more senders, so we can safely break

@@ -1,6 +1,6 @@
-use rwlock::data::{Status, TicketDraft};
+use rwlock::data::{ Status, TicketDraft };
 use rwlock::launch;
-use ticket_fields::test_helpers::{ticket_description, ticket_title};
+use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
 #[test]
 fn works() {

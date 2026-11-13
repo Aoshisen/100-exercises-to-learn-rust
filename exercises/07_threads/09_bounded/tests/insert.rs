@@ -1,6 +1,6 @@
-use bounded::data::{Status, TicketDraft};
+use bounded::data::{ Status, TicketDraft };
 use bounded::launch;
-use ticket_fields::test_helpers::{ticket_description, ticket_title};
+use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
 #[test]
 fn works() {

@@ -1,6 +1,6 @@
 fn intro() -> &'static str {
     // TODO: fix me 👇
-    "I'm ready to _!"
+    "I'm ready to build a concurrent ticket management system!"
 }
 
 #[cfg(test)]
@@ -9,9 +9,6 @@ mod tests {
 
     #[test]
     fn test_intro() {
-        assert_eq!(
-            intro(),
-            "I'm ready to build a concurrent ticket management system!"
-        );
+        assert_eq!(intro(), "I'm ready to build a concurrent ticket management system!");
     }
 }

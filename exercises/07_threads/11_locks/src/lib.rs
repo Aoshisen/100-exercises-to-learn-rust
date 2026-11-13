@@ -1,11 +1,11 @@
 // TODO: Fill in the missing methods for `TicketStore`.
 //  Notice how we no longer need a separate update command: `Get` now returns a handle to the ticket
 //  which allows the caller to both modify and read the ticket.
-use std::sync::mpsc::{sync_channel, Receiver, SyncSender, TrySendError};
-use std::sync::{Arc, Mutex};
+use std::sync::mpsc::{ sync_channel, Receiver, SyncSender, TrySendError };
+use std::sync::{ Arc, Mutex };
 
-use crate::data::{Ticket, TicketDraft};
-use crate::store::{TicketId, TicketStore};
+use crate::data::{ Ticket, TicketDraft };
+use crate::store::{ TicketId, TicketStore };
 
 pub mod data;
 pub mod store;
@@ -16,25 +16,21 @@ pub struct TicketStoreClient {
 }
 
 impl TicketStoreClient {
-    pub fn insert(&self, draft: TicketDraft) -> Result<TicketId, OverloadedError> {
+    pub fn insert(&self, draft: TicketDraft) -> Result<TicketId, TrySendError<Command>> {
         let (response_sender, response_receiver) = sync_channel(1);
-        self.sender
-            .try_send(Command::Insert {
-                draft,
-                response_channel: response_sender,
-            })
-            .map_err(|_| OverloadedError)?;
+        self.sender.try_send(Command::Insert {
+            draft,
+            response_channel: response_sender,
+        })?;
         Ok(response_receiver.recv().unwrap())
     }
 
-    pub fn get(&self, id: TicketId) -> Result<Option<Arc<Mutex<Ticket>>>, OverloadedError> {
+    pub fn get(&self, id: TicketId) -> Result<Option<Arc<Mutex<Ticket>>>, TrySendError<Command>> {
         let (response_sender, response_receiver) = sync_channel(1);
-        self.sender
-            .try_send(Command::Get {
-                id,
-                response_channel: response_sender,
-            })
-            .map_err(|_| OverloadedError)?;
+        self.sender.try_send(Command::Get {
+            id,
+            response_channel: response_sender,
+        })?;
         Ok(response_receiver.recv().unwrap())
     }
 }
@@ -49,7 +45,7 @@ pub fn launch(capacity: usize) -> TicketStoreClient {
     TicketStoreClient { sender }
 }
 
-enum Command {
+pub enum Command {
     Insert {
         draft: TicketDraft,
         response_channel: SyncSender<TicketId>,
@@ -64,17 +60,11 @@ pub fn server(receiver: Receiver<Command>) {
     let mut store = TicketStore::new();
     loop {
         match receiver.recv() {
-            Ok(Command::Insert {
-                draft,
-                response_channel,
-            }) => {
+            Ok(Command::Insert { draft, response_channel }) => {
                 let id = store.add_ticket(draft);
                 let _ = response_channel.send(id);
             }
-            Ok(Command::Get {
-                id,
-                response_channel,
-            }) => {
+            Ok(Command::Get { id, response_channel }) => {
                 let ticket = store.get(id);
                 let _ = response_channel.send(ticket);
             }

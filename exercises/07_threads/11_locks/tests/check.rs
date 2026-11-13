@@ -1,6 +1,6 @@
-use locks::data::{Status, TicketDraft};
+use locks::data::{ Status, TicketDraft };
 use locks::launch;
-use ticket_fields::test_helpers::{ticket_description, ticket_title};
+use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
 #[test]
 fn works() {
@@ -14,6 +14,8 @@ fn works() {
     let ticket = client.get(ticket_id).unwrap().unwrap();
     {
         let mut ticket = ticket.lock().unwrap();
+
+        println!("{},{}<+++++++++++++++", ticket_id, ticket.id);
         assert_eq!(ticket_id, ticket.id);
         assert_eq!(ticket.status, Status::ToDo);
         assert_eq!(ticket.title, draft.title);
@@ -25,6 +27,7 @@ fn works() {
     let ticket = client.get(ticket_id).unwrap().unwrap();
     {
         let ticket = ticket.lock().unwrap();
+        println!("{},{}<+++++++++++++++", ticket_id, ticket.id);
         assert_eq!(ticket_id, ticket.id);
         assert_eq!(ticket.status, Status::InProgress);
     }

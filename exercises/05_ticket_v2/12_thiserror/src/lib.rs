@@ -2,11 +2,17 @@
 //   We've changed the enum variants to be more specific, thus removing the need for storing
 //   a `String` field into each variant.
 //   You'll also have to add `thiserror` as a dependency in the `Cargo.toml` file.
+use thiserror::Error;
 
+#[derive(Error, Debug)]
 enum TicketNewError {
+    #[error("Title cannot be empty")]
     TitleCannotBeEmpty,
+    #[error("Title cannot be longer than 50 bytes")]
     TitleTooLong,
+    #[error("Description cannot be empty")]
     DescriptionCannotBeEmpty,
+    #[error("Description cannot be longer than 500 bytes")]
     DescriptionTooLong,
 }
 
@@ -20,7 +26,9 @@ struct Ticket {
 #[derive(Debug, PartialEq, Clone)]
 enum Status {
     ToDo,
-    InProgress { assigned_to: String },
+    InProgress {
+        assigned_to: String,
+    },
     Done,
 }
 
@@ -28,7 +36,7 @@ impl Ticket {
     pub fn new(
         title: String,
         description: String,
-        status: Status,
+        status: Status
     ) -> Result<Ticket, TicketNewError> {
         if title.is_empty() {
             return Err(TicketNewError::TitleCannotBeEmpty);
@@ -54,7 +62,7 @@ impl Ticket {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::{overly_long_description, overly_long_title, valid_description, valid_title};
+    use common::{ overly_long_description, overly_long_title, valid_description, valid_title };
 
     #[test]
     fn title_cannot_be_empty() {
@@ -77,9 +85,6 @@ mod tests {
     #[test]
     fn description_cannot_be_too_long() {
         let err = Ticket::new(valid_title(), overly_long_description(), Status::ToDo).unwrap_err();
-        assert_eq!(
-            err.to_string(),
-            "Description cannot be longer than 500 bytes"
-        );
+        assert_eq!(err.to_string(), "Description cannot be longer than 500 bytes");
     }
 }

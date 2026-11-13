@@ -12,7 +12,9 @@ struct Ticket {
 #[derive(Debug, PartialEq)]
 enum Status {
     ToDo,
-    InProgress { assigned_to: String },
+    InProgress {
+        assigned_to: String,
+    },
     Done,
 }
 
@@ -38,14 +40,17 @@ impl Ticket {
         }
     }
     pub fn assigned_to(&self) -> &str {
-        todo!()
+        match &self.status {
+            Status::InProgress { assigned_to } => assigned_to,
+            _ => panic!("Only `In-Progress` tickets can be assigned to someone"),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use common::{valid_description, valid_title};
+    use common::{ valid_description, valid_title };
 
     #[test]
     #[should_panic(expected = "Only `In-Progress` tickets can be assigned to someone")]
@@ -63,13 +68,9 @@ mod tests {
 
     #[test]
     fn test_in_progress() {
-        let ticket = Ticket::new(
-            valid_title(),
-            valid_description(),
-            Status::InProgress {
-                assigned_to: "Alice".to_string(),
-            },
-        );
+        let ticket = Ticket::new(valid_title(), valid_description(), Status::InProgress {
+            assigned_to: "Alice".to_string(),
+        });
         assert_eq!(ticket.assigned_to(), "Alice");
     }
 }

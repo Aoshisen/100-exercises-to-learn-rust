@@ -1,6 +1,6 @@
 // TODO: Implement the `to_dos` method. It must return a `Vec` of references to the tickets
 //  in `TicketStore` with status set to `Status::ToDo`.
-use ticket_fields::{TicketDescription, TicketTitle};
+use ticket_fields::{ TicketDescription, TicketTitle };
 
 #[derive(Clone)]
 pub struct TicketStore {
@@ -31,12 +31,18 @@ impl TicketStore {
     pub fn add_ticket(&mut self, ticket: Ticket) {
         self.tickets.push(ticket);
     }
+    pub fn to_dos(&self) -> Vec<&Ticket> {
+        self.tickets
+            .iter()
+            .filter(|&ticket| &ticket.status == &Status::ToDo)
+            .collect()
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use ticket_fields::test_helpers::{ticket_description, ticket_title};
+    use ticket_fields::test_helpers::{ ticket_description, ticket_title };
 
     #[test]
     fn todos() {

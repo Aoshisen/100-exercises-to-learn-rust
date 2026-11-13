@@ -12,6 +12,44 @@
 // interested in learning more about it.
 // You don't have to though: it's perfectly okay to write three separate
 // implementations manually. Venture further only if you're curious.
+trait Power<T> {
+    fn power(&self, n: T) -> u32;
+}
+impl Power<u32> for u32 {
+    fn power(&self, n: u32) -> Self {
+        let mut n = n;
+        let mut result: u32 = 1;
+        while n > 0 {
+            result = result.wrapping_mul(*self);
+            n -= 1;
+        }
+        result
+    }
+}
+
+impl Power<u16> for u32 {
+    fn power(&self, n: u16) -> Self {
+        let mut n = n;
+        let mut result: u32 = 1;
+        while n > 0 {
+            result = result.wrapping_mul(*self);
+            n -= 1;
+        }
+        result
+    }
+}
+
+impl Power<&u32> for u32 {
+    fn power(&self, n: &u32) -> Self {
+        let mut n = *n;
+        let mut result: u32 = 1;
+        while n > 0 {
+            result = result.wrapping_mul(*self);
+            n -= 1;
+        }
+        result
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -19,19 +57,19 @@ mod tests {
 
     #[test]
     fn test_power_u16() {
-        let x: u32 = 2_u32.power(3u16);
+        let x: u32 = (2_u32).power(3u16);
         assert_eq!(x, 8);
     }
 
     #[test]
     fn test_power_u32() {
-        let x: u32 = 2_u32.power(3u32);
+        let x: u32 = (2_u32).power(3u32);
         assert_eq!(x, 8);
     }
 
     #[test]
     fn test_power_ref_u32() {
-        let x: u32 = 2_u32.power(&3u32);
+        let x: u32 = (2_u32).power(&3u32);
         assert_eq!(x, 8);
     }
 }

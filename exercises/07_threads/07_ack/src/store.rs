@@ -1,12 +1,13 @@
-use crate::data::{Status, Ticket, TicketDraft};
+use crate::data::{ Status, Ticket, TicketDraft };
 use std::collections::BTreeMap;
+use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TicketId(u64);
 
 #[derive(Clone)]
 pub struct TicketStore {
-    tickets: BTreeMap<TicketId, Ticket>,
+    tickets: BTreeMap<TicketId, Arc<Ticket>>,
     counter: u64,
 }
 
@@ -27,11 +28,11 @@ impl TicketStore {
             description: ticket.description,
             status: Status::ToDo,
         };
-        self.tickets.insert(id, ticket);
+        self.tickets.insert(id, Arc::new(ticket));
         id
     }
 
-    pub fn get(&self, id: TicketId) -> Option<&Ticket> {
-        self.tickets.get(&id)
+    pub fn get(&self, id: TicketId) -> Option<Arc<Ticket>> {
+        self.tickets.get(&id).cloned()
     }
 }

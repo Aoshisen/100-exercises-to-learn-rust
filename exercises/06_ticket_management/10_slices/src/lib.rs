@@ -1,5 +1,13 @@
 // TODO: Define a function named `sum` that takes a reference to a slice of `u32` and returns the sum of all
 //  elements in the slice.
+// pub fn sum(v: &Vec<u32>) -> u32 {
+//     v.iter().sum()
+// }
+
+// &Vec<u32> 会自动 deref 成 &[u32]，所以调用方无需改代码。
+pub fn sum(v: &[u32]) -> u32 {
+    v.iter().sum()
+}
 
 #[cfg(test)]
 mod tests {
